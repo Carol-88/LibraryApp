@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "488416397843",
+    "firebase_url": "https://book-app-library-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "book-app-library",
+    "storage_bucket": "book-app-library.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:488416397843:android:1141f64534d946ceb50de6",
+        "android_client_info": {
+          "package_name": "com.example.libraryApp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "488416397843-nrkpovoatojppdlginccpghh0r2c1v3i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBp1r7peyHu0rFaH5-nfdLTrayyx1Hd6JU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "488416397843-nrkpovoatojppdlginccpghh0r2c1v3i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
