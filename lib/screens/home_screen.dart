@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:library_app/app_styles.dart';
 import 'package:library_app/screens/book_detail_screen.dart';
 import 'package:library_app/services/open_library_service.dart';
-import 'package:library_app/theme.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -61,26 +61,26 @@ class HomeScreenState extends State<HomeScreen> {
         actions: [
           if (user == null) ...[
             IconButton(
-              icon: Icon(Icons.login),
+              icon: Icon(Icons.login, color: AppColors.secondary),
               onPressed: () {
                 Navigator.pushNamed(context, '/login');
               },
             ),
             IconButton(
-              icon: Icon(Icons.person_add),
+              icon: Icon(Icons.person_add, color: AppColors.secondary),
               onPressed: () {
                 Navigator.pushNamed(context, '/register');
               },
             ),
           ] else ...[
             IconButton(
-              icon: Icon(Icons.person),
+              icon: Icon(Icons.person, color: AppColors.secondary),
               onPressed: () {
                 Navigator.pushNamed(context, '/user');
               },
             ),
             IconButton(
-              icon: Icon(Icons.logout),
+              icon: Icon(Icons.logout, color: AppColors.secondary),
               onPressed: _logout,
             ),
           ],
@@ -96,7 +96,7 @@ class HomeScreenState extends State<HomeScreen> {
                 labelText: 'Buscar libros',
                 border: OutlineInputBorder(),
                 suffixIcon: IconButton(
-                  icon: Icon(Icons.search),
+                  icon: Icon(Icons.search, color: AppColors.dark),
                   onPressed: _searchBooks,
                 ),
               ),
@@ -115,7 +115,10 @@ class HomeScreenState extends State<HomeScreen> {
                                   'https://covers.openlibrary.org/b/id/${book['cover']}-S.jpg',
                                   width: 50,
                                 )
-                              : Icon(Icons.book),
+                              : Icon(
+                                  Icons.book,
+                                  color: AppColors.dark,
+                                ),
                           title: Text(book['title'] ?? 'Título desconocido'),
                           subtitle: Text(book['author'] ?? 'Autor desconocido'),
                           onTap: () {

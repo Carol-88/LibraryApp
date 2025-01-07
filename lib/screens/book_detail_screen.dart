@@ -90,15 +90,18 @@ class BookDetailScreen extends StatelessWidget {
                   children: [
                     ElevatedButton(
                       onPressed: () => _addToList('favoritos', context),
-                      child: Text('Favoritos'),
+                      child: Text('Favoritos',
+                          style: TextStyle(color: Colors.black)),
                     ),
                     ElevatedButton(
                       onPressed: () => _addToList('pendientes', context),
-                      child: Text('Pendientes'),
+                      child: Text('Pendientes',
+                          style: TextStyle(color: Colors.black)),
                     ),
                     ElevatedButton(
                       onPressed: () => _addToList('leídos', context),
-                      child: Text('Leídos'),
+                      child:
+                          Text('Leídos', style: TextStyle(color: Colors.black)),
                     ),
                   ],
                 ),
