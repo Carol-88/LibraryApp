@@ -74,7 +74,9 @@ class UserScreenState extends State<UserScreen> {
       stream: _firestore
           .collection('users')
           .doc(userId)
-          .collection(listName)
+          .collection('lists') // Accede a la subcolección 'lists'
+          .doc(listName)
+          .collection('books') // Libros dentro de la lista específica
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -124,7 +126,9 @@ class UserScreenState extends State<UserScreen> {
       await _firestore
           .collection('users')
           .doc(userId)
-          .collection(listName)
+          .collection('lists') // Accede a la subcolección 'lists'
+          .doc(listName)
+          .collection('books') // Libros dentro de la lista específica
           .doc(bookId)
           .delete();
       ScaffoldMessenger.of(context).showSnackBar(
