@@ -45,8 +45,9 @@ class UserScreenState extends State<UserScreen> {
         appBar: AppBar(
           title: Center(
               child: Text("Perfil",
-                  style:
-                      GoogleFonts.lexend().copyWith(color: AppColors.accent))),
+                  style: GoogleFonts.lexend().copyWith(
+                    color: AppColors.accent,
+                  ))),
           backgroundColor: AppColors.background,
           leading: IconButton(
             icon: Icon(Icons.arrow_back,

@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:library_app/app_styles.dart';
 import 'package:library_app/widgets/add_book.dart';
 
 class BookDetailScreen extends StatelessWidget {
@@ -76,8 +78,28 @@ class BookDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(book['title'] ?? 'Título desconocido'),
-      ),
+          title: Center(
+            child: Text(
+              book['title'] ?? 'Título desconocido',
+              style: GoogleFonts.lexend().copyWith(color: AppColors.accent),
+            ),
+          ),
+          backgroundColor: AppColors.background,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back,
+                color: AppColors.accent), // Icono de retroceso
+            onPressed: () {
+              Navigator.of(context).pop(); // Volver atrás
+            },
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.person, color: AppColors.secondary),
+              onPressed: () {
+                Navigator.pushNamed(context, '/user');
+              },
+            ),
+          ]),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
