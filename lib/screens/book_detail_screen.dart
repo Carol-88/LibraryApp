@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:library_app/widgets/add_book.dart';
@@ -21,6 +22,16 @@ class BookDetailScreen extends StatelessWidget {
     }
 
     try {
+      // Asegúrate de que los datos del libro estén completos
+      if (book['title'] == null ||
+          book['author'] == null ||
+          book['workKey'] == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Faltan datos para agregar el libro.')),
+        );
+        return;
+      }
+
       await addBookToList(user.uid, listName, {
         'title': book['title'],
         'author': book['author'],
@@ -36,6 +47,27 @@ class BookDetailScreen extends StatelessWidget {
         SnackBar(content: Text('Error al añadir el libro a la lista: $e')),
       );
     }
+  }
+
+  Future<Map<String, int>> _fetchListCounts(String workKey) async {
+    try {
+      final DocumentSnapshot bookDoc = await FirebaseFirestore.instance
+          .collection('global_books')
+          .doc(workKey)
+          .get();
+
+      if (bookDoc.exists) {
+        return {
+          'favoritos': bookDoc['favoritos'] ?? 0,
+          'pendientes': bookDoc['pendientes'] ?? 0,
+          'leídos': bookDoc['leídos'] ?? 0,
+        };
+      }
+    } catch (e) {
+      print("Error al obtener datos del libro: $e");
+    }
+
+    return {'favoritos': 0, 'pendientes': 0, 'leídos': 0};
   }
 
   @override
@@ -77,6 +109,44 @@ class BookDetailScreen extends StatelessWidget {
               Text(
                 book['description'] ?? 'No hay descripción disponible.',
                 style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 16),
+              FutureBuilder<Map<String, int>>(
+                future: _fetchListCounts(book['workKey']),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Text(
+                      'Error al cargar los datos.',
+                      style: TextStyle(color: Colors.red),
+                    );
+                  }
+
+                  final counts = snapshot.data ??
+                      {
+                        'favoritos': 0,
+                        'pendientes': 0,
+                        'leídos': 0,
+                      };
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Usuarios con este libro en sus listas:',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 8),
+                      Text('Favoritos: ${counts['favoritos']}'),
+                      Text('Pendientes: ${counts['pendientes']}'),
+                      Text('Leídos: ${counts['leídos']}'),
+                    ],
+                  );
+                },
               ),
               SizedBox(height: 16),
               if (user != null) ...[
