@@ -74,9 +74,9 @@ class UserScreenState extends State<UserScreen> {
       stream: _firestore
           .collection('users')
           .doc(userId)
-          .collection('lists') // Accede a la subcolección 'lists'
+          .collection('lists')
           .doc(listName)
-          .collection('books') // Libros dentro de la lista específica
+          .collection('books')
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -107,11 +107,23 @@ class UserScreenState extends State<UserScreen> {
                   : Icon(Icons.book, size: 50),
               title: Text(book['title'] ?? 'Título desconocido'),
               subtitle: Text(book['author'] ?? 'Autor desconocido'),
-              trailing: IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () async {
-                  await _removeBookFromList(userId, listName, books[index].id);
+              trailing: PopupMenuButton<String>(
+                onSelected: (newList) async {
+                  await _moveBookToList(
+                      userId, listName, newList, books[index].id, book);
                 },
+                itemBuilder: (context) => [
+                  if (listName != 'favoritos')
+                    PopupMenuItem(
+                        value: 'favoritos', child: Text('Mover a Favoritos')),
+                  if (listName != 'pendientes')
+                    PopupMenuItem(
+                        value: 'pendientes', child: Text('Mover a Pendientes')),
+                  if (listName != 'leídos')
+                    PopupMenuItem(
+                        value: 'leídos', child: Text('Mover a Leídos')),
+                ],
+                icon: Icon(Icons.more_vert),
               ),
             );
           },
@@ -120,15 +132,41 @@ class UserScreenState extends State<UserScreen> {
     );
   }
 
+  Future<void> _moveBookToList(String userId, String currentList,
+      String newList, String bookId, Map<String, dynamic> bookData) async {
+    try {
+      // Añadir libro a la nueva lista
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('lists')
+          .doc(newList)
+          .collection('books')
+          .doc(bookId)
+          .set(bookData);
+
+      // Eliminar libro de la lista actual
+      await _removeBookFromList(userId, currentList, bookId);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Libro movido a $newList.')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al mover el libro. Inténtalo de nuevo.')),
+      );
+    }
+  }
+
   Future<void> _removeBookFromList(
       String userId, String listName, String bookId) async {
     try {
       await _firestore
           .collection('users')
           .doc(userId)
-          .collection('lists') // Accede a la subcolección 'lists'
+          .collection('lists')
           .doc(listName)
-          .collection('books') // Libros dentro de la lista específica
+          .collection('books')
           .doc(bookId)
           .delete();
       ScaffoldMessenger.of(context).showSnackBar(
