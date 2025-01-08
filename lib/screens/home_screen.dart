@@ -94,19 +94,41 @@ class HomeScreenState extends State<HomeScreen> {
               controller: _searchController,
               decoration: InputDecoration(
                 labelText: 'Buscar libros',
+                labelStyle:
+                    TextStyle(color: AppColors.background), // Color del label
                 border: OutlineInputBorder(),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.dark, width: 2.0),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide:
+                      BorderSide(color: AppColors.background, width: 1.0),
+                ),
                 suffixIcon: IconButton(
                   icon: Icon(Icons.search, color: AppColors.dark),
                   onPressed: _searchBooks,
                 ),
               ),
+              cursorColor: AppColors.dark,
+              style: TextStyle(color: AppColors.background),
             ),
             SizedBox(height: 16),
             _isLoading
-                ? CircularProgressIndicator()
+                ? Expanded(
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(AppColors.dark),
+                        strokeWidth: 6.0, // Aumenta el grosor del spinner
+                      ),
+                    ),
+                  )
                 : Expanded(
-                    child: ListView.builder(
+                    child: ListView.separated(
                       itemCount: _searchResults.length,
+                      separatorBuilder: (context, index) => Divider(
+                        color: AppColors.dark,
+                        thickness: 1.0,
+                      ), // Línea divisoria entre elementos
                       itemBuilder: (context, index) {
                         final book = _searchResults[index];
                         return ListTile(

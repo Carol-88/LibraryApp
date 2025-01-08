@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:library_app/app_styles.dart';
 
 class UserScreen extends StatefulWidget {
   @override
@@ -41,16 +43,36 @@ class UserScreenState extends State<UserScreen> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Tu perfil'),
+          title: Center(
+              child: Text("Perfil",
+                  style:
+                      GoogleFonts.lexend().copyWith(color: AppColors.accent))),
+          backgroundColor: AppColors.background,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back,
+                color: AppColors.accent), // Icono de retroceso
+            onPressed: () {
+              Navigator.of(context).pop(); // Volver atrás
+            },
+          ),
           actions: [
             IconButton(
-              icon: Icon(Icons.logout),
+              icon: Icon(
+                Icons.logout,
+                color: AppColors.primary,
+              ),
               onPressed: () async {
                 await _cerrarSesion(context);
               },
             ),
           ],
           bottom: TabBar(
+            labelColor: AppColors.accent, // Color para la pestaña seleccionada
+            unselectedLabelColor: AppColors.primary,
+            labelStyle: TextStyle(fontWeight: FontWeight.bold),
+            dividerColor:
+                Colors.transparent, // Color para pestañas no seleccionadas
+            indicatorColor: AppColors.dark, // Indicador debajo de la pestaña
             tabs: [
               Tab(text: 'Favoritos'),
               Tab(text: 'Pendientes'),
@@ -93,8 +115,15 @@ class UserScreenState extends State<UserScreen> {
 
         final books = snapshot.data!.docs;
 
-        return ListView.builder(
+        return ListView.separated(
           itemCount: books.length,
+          separatorBuilder: (context, index) => Container(
+            margin: EdgeInsets.symmetric(horizontal: 16.0), // Ajusta el margen
+            child: Divider(
+              color: AppColors.dark,
+              thickness: 1.0,
+            ),
+          ),
           itemBuilder: (context, index) {
             final book = books[index].data() as Map<String, dynamic>;
 
@@ -108,9 +137,14 @@ class UserScreenState extends State<UserScreen> {
               title: Text(book['title'] ?? 'Título desconocido'),
               subtitle: Text(book['author'] ?? 'Autor desconocido'),
               trailing: PopupMenuButton<String>(
-                onSelected: (newList) async {
-                  await _moveBookToList(
-                      userId, listName, newList, books[index].id, book);
+                onSelected: (option) async {
+                  if (option == 'delete') {
+                    await _removeBookFromList(
+                        userId, listName, books[index].id);
+                  } else {
+                    await _moveBookToList(
+                        userId, listName, option, books[index].id, book);
+                  }
                 },
                 itemBuilder: (context) => [
                   if (listName != 'favoritos')
@@ -122,6 +156,8 @@ class UserScreenState extends State<UserScreen> {
                   if (listName != 'leídos')
                     PopupMenuItem(
                         value: 'leídos', child: Text('Mover a Leídos')),
+                  PopupMenuItem(
+                      value: 'delete', child: Text('Eliminar de la lista')),
                 ],
                 icon: Icon(Icons.more_vert),
               ),
