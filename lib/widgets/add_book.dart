@@ -3,41 +3,52 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 Future<void> addBookToList(
     String userId, String listName, Map<String, dynamic> bookData) async {
   try {
-    // Añadir el libro a la lista específica del usuario
-    await FirebaseFirestore.instance
+    final userListRef = FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
         .collection('lists')
         .doc(listName)
-        .collection('books')
-        .add(bookData);
+        .collection('books');
+
+    // Verificar si el libro ya está en la lista
+    final querySnapshot = await userListRef
+        .where('workKey', isEqualTo: bookData['workKey'])
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      print("El libro ya está en la lista $listName.");
+      return;
+    }
+
+    // Añadir el libro a la lista específica del usuario
+    await userListRef.add(bookData);
 
     print("Libro añadido a la lista $listName");
 
-    // Actualizar la colección "global_books" en la raíz de Firestore
+    // Referencia al documento del libro en la colección global_books
     final bookRef = FirebaseFirestore.instance
         .collection('global_books')
-        .doc(bookData['workKey']); // Aquí eliminamos .snapshots()
+        .doc(bookData['workKey']);
 
     await FirebaseFirestore.instance.runTransaction((transaction) async {
-      // Obtener el documento actual
       final bookSnapshot = await transaction.get(bookRef);
 
       if (!bookSnapshot.exists) {
-        // Si el libro no existe, crearlo con contadores iniciales
         transaction.set(bookRef, {
           'title': bookData['title'],
           'author': bookData['author'],
           'cover': bookData['cover'],
-          'favoritos': 0,
-          'pendientes': 0,
-          'leídos': 0,
+          'description': bookData['description'],
+          'listCount': {
+            'favoritos': 0,
+            'pendientes': 0,
+            'leídos': 0,
+          },
         });
       }
 
-      // Incrementar el contador de la lista correspondiente
       transaction.update(bookRef, {
-        listName: FieldValue.increment(1),
+        'listCount.$listName': FieldValue.increment(1),
       });
     });
 

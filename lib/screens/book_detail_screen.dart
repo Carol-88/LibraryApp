@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:library_app/app_styles.dart';
-import 'package:library_app/widgets/add_book.dart';
+import 'package:library_app/widgets/add_book.dart'; // Asegúrate de que la importación sea correcta
 
 class BookDetailScreen extends StatelessWidget {
   final Map<String, dynamic> book;
@@ -24,7 +24,6 @@ class BookDetailScreen extends StatelessWidget {
     }
 
     try {
-      // Asegúrate de que los datos del libro estén completos
       if (book['title'] == null ||
           book['author'] == null ||
           book['workKey'] == null) {
@@ -34,11 +33,14 @@ class BookDetailScreen extends StatelessWidget {
         return;
       }
 
+      // Añadir el libro a la lista del usuario
       await addBookToList(user.uid, listName, {
         'title': book['title'],
         'author': book['author'],
         'cover': book['cover'],
         'workKey': book['workKey'],
+        'description':
+            book['description'], // Añadimos descripción si está disponible
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -60,9 +62,9 @@ class BookDetailScreen extends StatelessWidget {
 
       if (bookDoc.exists) {
         return {
-          'favoritos': bookDoc['favoritos'] ?? 0,
-          'pendientes': bookDoc['pendientes'] ?? 0,
-          'leídos': bookDoc['leídos'] ?? 0,
+          'favoritos': bookDoc['listCount']['favoritos'] ?? 0,
+          'pendientes': bookDoc['listCount']['pendientes'] ?? 0,
+          'leídos': bookDoc['listCount']['leídos'] ?? 0,
         };
       }
     } catch (e) {
@@ -78,28 +80,28 @@ class BookDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-          title: Center(
-            child: Text(
-              book['title'] ?? 'Título desconocido',
-              style: GoogleFonts.lexend().copyWith(color: AppColors.accent),
-            ),
+        title: Center(
+          child: Text(
+            book['title'] ?? 'Título desconocido',
+            style: GoogleFonts.lexend().copyWith(color: AppColors.accent),
           ),
-          backgroundColor: AppColors.background,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back,
-                color: AppColors.accent), // Icono de retroceso
+        ),
+        backgroundColor: AppColors.background,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColors.accent),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.person, color: AppColors.secondary),
             onPressed: () {
-              Navigator.of(context).pop(); // Volver atrás
+              Navigator.pushNamed(context, '/user');
             },
           ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.person, color: AppColors.secondary),
-              onPressed: () {
-                Navigator.pushNamed(context, '/user');
-              },
-            ),
-          ]),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -148,11 +150,7 @@ class BookDetailScreen extends StatelessWidget {
                   }
 
                   final counts = snapshot.data ??
-                      {
-                        'favoritos': 0,
-                        'pendientes': 0,
-                        'leídos': 0,
-                      };
+                      {'favoritos': 0, 'pendientes': 0, 'leídos': 0};
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,18 +180,15 @@ class BookDetailScreen extends StatelessWidget {
                   children: [
                     ElevatedButton(
                       onPressed: () => _addToList('favoritos', context),
-                      child: Text('Favoritos',
-                          style: TextStyle(color: Colors.black)),
+                      child: Text('Favoritos'),
                     ),
                     ElevatedButton(
                       onPressed: () => _addToList('pendientes', context),
-                      child: Text('Pendientes',
-                          style: TextStyle(color: Colors.black)),
+                      child: Text('Pendientes'),
                     ),
                     ElevatedButton(
                       onPressed: () => _addToList('leídos', context),
-                      child:
-                          Text('Leídos', style: TextStyle(color: Colors.black)),
+                      child: Text('Leídos'),
                     ),
                   ],
                 ),
