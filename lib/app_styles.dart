@@ -6,6 +6,7 @@ class AppColors {
   static const accent = Color(0xFFDD99BB);
   static const dark = Color(0xFF7B506F);
   static const background = Color(0xFF1F1A38);
+  static const buttons = Color(0xFF65558F);
 }
 
 class AppStyles {

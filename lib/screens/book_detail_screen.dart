@@ -136,7 +136,7 @@ class BookDetailScreen extends StatelessWidget {
               ),
               SizedBox(height: 16),
               FutureBuilder<Map<String, int>>(
-                future: _fetchListCounts(book['workKey']),
+                future: _fetchListCounts(book['workKey'].substring(7)),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
@@ -179,14 +179,20 @@ class BookDetailScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.buttons),
                       onPressed: () => _addToList('favoritos', context),
                       child: Text('Favoritos'),
                     ),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.buttons),
                       onPressed: () => _addToList('pendientes', context),
                       child: Text('Pendientes'),
                     ),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.buttons),
                       onPressed: () => _addToList('leídos', context),
                       child: Text('Leídos'),
                     ),
