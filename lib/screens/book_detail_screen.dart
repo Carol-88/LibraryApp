@@ -5,10 +5,45 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:library_app/app_styles.dart';
 import 'package:library_app/widgets/add_book.dart'; // Asegúrate de que la importación sea correcta
 
-class BookDetailScreen extends StatelessWidget {
+class BookDetailScreen extends StatefulWidget {
   final Map<String, dynamic> book;
 
   BookDetailScreen({required this.book});
+
+  @override
+  _BookDetailScreenState createState() => _BookDetailScreenState();
+}
+
+class _BookDetailScreenState extends State<BookDetailScreen> {
+  late Map<String, int> _listCounts;
+
+  @override
+  void initState() {
+    super.initState();
+    _listCounts = {'favoritos': 0, 'pendientes': 0, 'leídos': 0};
+    _fetchListCounts(widget.book['workKey'].substring(7));
+  }
+
+  Future<void> _fetchListCounts(String workKey) async {
+    try {
+      final DocumentSnapshot bookDoc = await FirebaseFirestore.instance
+          .collection('global_books')
+          .doc(workKey)
+          .get();
+
+      if (bookDoc.exists) {
+        setState(() {
+          _listCounts = {
+            'favoritos': bookDoc['listCount']['favoritos'] ?? 0,
+            'pendientes': bookDoc['listCount']['pendientes'] ?? 0,
+            'leídos': bookDoc['listCount']['leídos'] ?? 0,
+          };
+        });
+      }
+    } catch (e) {
+      print("Error al obtener datos del libro: $e");
+    }
+  }
 
   Future<void> _addToList(String listName, BuildContext context) async {
     final User? user = FirebaseAuth.instance.currentUser;
@@ -24,9 +59,9 @@ class BookDetailScreen extends StatelessWidget {
     }
 
     try {
-      if (book['title'] == null ||
-          book['author'] == null ||
-          book['workKey'] == null) {
+      if (widget.book['title'] == null ||
+          widget.book['author'] == null ||
+          widget.book['workKey'] == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Faltan datos para agregar el libro.')),
         );
@@ -35,43 +70,24 @@ class BookDetailScreen extends StatelessWidget {
 
       // Añadir el libro a la lista del usuario
       await addBookToList(user.uid, listName, {
-        'title': book['title'],
-        'author': book['author'],
-        'cover': book['cover'],
-        'workKey': book['workKey'],
-        'description':
-            book['description'], // Añadimos descripción si está disponible
+        'title': widget.book['title'],
+        'author': widget.book['author'],
+        'cover': widget.book['cover'],
+        'workKey': widget.book['workKey'],
+        'description': widget.book['description'],
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Libro añadido a "$listName".')),
       );
+
+      // Recargar los contadores después de añadir el libro
+      _fetchListCounts(widget.book['workKey'].substring(7));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al añadir el libro a la lista: $e')),
       );
     }
-  }
-
-  Future<Map<String, int>> _fetchListCounts(String workKey) async {
-    try {
-      final DocumentSnapshot bookDoc = await FirebaseFirestore.instance
-          .collection('global_books')
-          .doc(workKey)
-          .get();
-
-      if (bookDoc.exists) {
-        return {
-          'favoritos': bookDoc['listCount']['favoritos'] ?? 0,
-          'pendientes': bookDoc['listCount']['pendientes'] ?? 0,
-          'leídos': bookDoc['listCount']['leídos'] ?? 0,
-        };
-      }
-    } catch (e) {
-      print("Error al obtener datos del libro: $e");
-    }
-
-    return {'favoritos': 0, 'pendientes': 0, 'leídos': 0};
   }
 
   @override
@@ -82,7 +98,7 @@ class BookDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: Center(
           child: Text(
-            book['title'] ?? 'Título desconocido',
+            widget.book['title'] ?? 'Título desconocido',
             style: GoogleFonts.lexend().copyWith(color: AppColors.accent),
           ),
         ),
@@ -109,18 +125,18 @@ class BookDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                book['title'] ?? 'Título desconocido',
+                widget.book['title'] ?? 'Título desconocido',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
               Text(
-                'Autor: ${book['author'] ?? 'Autor desconocido'}',
+                'Autor: ${widget.book['author'] ?? 'Autor desconocido'}',
                 style: TextStyle(fontSize: 18),
               ),
               SizedBox(height: 16),
-              book['cover'] != null
+              widget.book['cover'] != null
                   ? Image.network(
-                      'https://covers.openlibrary.org/b/id/${book['cover']}-L.jpg',
+                      'https://covers.openlibrary.org/b/id/${widget.book['cover']}-L.jpg',
                       height: 200,
                     )
                   : Icon(Icons.book, size: 100),
@@ -131,42 +147,22 @@ class BookDetailScreen extends StatelessWidget {
               ),
               SizedBox(height: 8),
               Text(
-                book['description'] ?? 'No hay descripción disponible.',
+                widget.book['description'] ?? 'No hay descripción disponible.',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 16),
-              FutureBuilder<Map<String, int>>(
-                future: _fetchListCounts(book['workKey'].substring(7)),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-
-                  if (snapshot.hasError) {
-                    return Text(
-                      'Error al cargar los datos.',
-                      style: TextStyle(color: Colors.red),
-                    );
-                  }
-
-                  final counts = snapshot.data ??
-                      {'favoritos': 0, 'pendientes': 0, 'leídos': 0};
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Usuarios con este libro en sus listas:',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 8),
-                      Text('Favoritos: ${counts['favoritos']}'),
-                      Text('Pendientes: ${counts['pendientes']}'),
-                      Text('Leídos: ${counts['leídos']}'),
-                    ],
-                  );
-                },
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Usuarios con este libro en sus listas:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  Text('Favoritos: ${_listCounts['favoritos']}'),
+                  Text('Pendientes: ${_listCounts['pendientes']}'),
+                  Text('Leídos: ${_listCounts['leídos']}'),
+                ],
               ),
               SizedBox(height: 16),
               if (user != null) ...[

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:library_app/app_styles.dart';
+import 'package:library_app/screens/book_detail_screen.dart';
 
 class UserScreen extends StatefulWidget {
   @override
@@ -137,6 +138,14 @@ class UserScreenState extends State<UserScreen> {
                   : Icon(Icons.book, size: 50),
               title: Text(book['title'] ?? 'Título desconocido'),
               subtitle: Text(book['author'] ?? 'Autor desconocido'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookDetailScreen(book: book),
+                  ),
+                );
+              },
               trailing: PopupMenuButton<String>(
                 onSelected: (option) async {
                   if (option == 'delete') {
