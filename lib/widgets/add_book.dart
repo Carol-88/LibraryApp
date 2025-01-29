@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 Future<void> addBookToList(
-    String userId, String listName, Map<String, dynamic> bookData) async {
+    String userId, String listName, Map<String, dynamic> bookData,
+    {int value = 1}) async {
   try {
     String sanitizedWorkKey = bookData['workKey'].substring(7);
 
@@ -54,7 +55,7 @@ Future<void> addBookToList(
             Map<String, dynamic>.from(currentData['listCount'] ?? {});
 
         // Incrementar el contador de la lista específica
-        listCount[listName] = (listCount[listName] ?? 0) + 1;
+        listCount[listName] = (listCount[listName] ?? 0) + value;
 
         // Actualizar el documento
         transaction.update(globalBookRef, {

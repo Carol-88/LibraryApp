@@ -1,21 +1,40 @@
 import 'package:flutter/material.dart';
 
-class RatingBar extends StatelessWidget {
-  final double rating;
-  final int count;
+class Rating extends StatelessWidget {
+  const Rating({
+    super.key,
+    required this.value,
+    this.color = Colors.amber,
+    this.onValueClicked,
+  });
 
-  const RatingBar({required this.rating, required this.count});
+  final double value;
+  final Color color;
+  final Function(int)? onValueClicked;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: List.generate(
-          5,
-          (index) => Icon(
-                index < rating ? Icons.star : Icons.star_border,
-                color: Colors.amber,
-                size: 24,
-              )),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (int i = 1; i <= 5; i++)
+          InkWell(
+            onTap: () {
+              if (onValueClicked != null) {
+                onValueClicked!(i);
+              }
+            },
+            child: (value >= i)
+                ? Icon(
+                    Icons.star,
+                    color: color,
+                  )
+                : Icon(
+                    Icons.star_border,
+                    color: color,
+                  ),
+          ),
+      ],
     );
   }
 }

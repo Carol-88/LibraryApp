@@ -1,0 +1,2 @@
+Integrar el widget rating de harry plugin_platform_interface 
+ - crear la funcion que calcule votos y usarios
