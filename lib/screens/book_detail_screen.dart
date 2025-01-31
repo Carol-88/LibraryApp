@@ -3,12 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:library_app/app_styles.dart';
-import 'package:library_app/widgets/rating_bar.dart';
+import 'package:library_app/models/book.dart';
+import 'package:library_app/widgets/add_book.dart';
 
 class BookDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> book;
+  final Book book;
 
-  const BookDetailScreen({super.key, required this.book});
+  const BookDetailScreen({required this.book});
 
   @override
   _BookDetailScreenState createState() => _BookDetailScreenState();
@@ -16,79 +17,29 @@ class BookDetailScreen extends StatefulWidget {
 
 class _BookDetailScreenState extends State<BookDetailScreen> {
   late Map<String, int> _listCounts;
-  late String workKey;
 
   @override
   void initState() {
     super.initState();
-    _listCounts = {'favoritos': 0, 'pendientes': 0, 'leídos': 0};
-    workKey = widget.book['workKey']?.substring(7) ?? '';
-    _fetchListCounts(workKey);
-  }
-
-  Future<void> _addBookToList(String listName, BuildContext context) async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text("Inicia sesión para añadir libros a tus listas.")),
-      );
-      return;
-    }
-
-    final userId = user.uid;
-    final sanitizedWorkKey =
-        widget.book['key']?.replaceAll('/works/', '') ?? '';
-    final userListRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('lists')
-        .doc(listName)
-        .collection('books');
-
-    try {
-      final snapshot =
-          await userListRef.where('workKey', isEqualTo: sanitizedWorkKey).get();
-
-      if (snapshot.docs.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("El libro ya está en la lista $listName.")),
-        );
-        return;
-      }
-
-      await userListRef.add({
-        'workKey': sanitizedWorkKey,
-        'title': widget.book['title'] ?? 'Título desconocido',
-        'author': widget.book['author'] ?? 'Autor desconocido',
-        'cover': widget.book['cover'],
-        'average_rating': widget.book['average_rating'] ?? 0.0,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Libro añadido a la lista $listName.")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error al añadir el libro a la lista.")),
-      );
+    _listCounts = {'favoritos': 0, 'pendientes': 0, 'leidos': 0};
+    if (widget.book.workKey != null) {
+      _fetchListCounts(widget.book.workKey!.substring(7));
     }
   }
 
   Future<void> _fetchListCounts(String workKey) async {
     try {
-      final doc = await FirebaseFirestore.instance
+      final DocumentSnapshot bookDoc = await FirebaseFirestore.instance
           .collection('global_books')
           .doc(workKey)
           .get();
 
-      if (doc.exists) {
+      if (bookDoc.exists) {
         setState(() {
           _listCounts = {
-            'favoritos': doc['listCount']['favoritos'] ?? 0,
-            'pendientes': doc['listCount']['pendientes'] ?? 0,
-            'leídos': doc['listCount']['leídos'] ?? 0,
+            'favoritos': bookDoc['listCount']['favoritos'] ?? 0,
+            'pendientes': bookDoc['listCount']['pendientes'] ?? 0,
+            'leidos': bookDoc['listCount']['leidos'] ?? 0,
           };
         });
       }
@@ -97,76 +48,72 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     }
   }
 
-  Future<bool> _userCanVote() async {
+  Future<void> _addToList(String listName, BuildContext context) async {
     final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return false;
 
-    final userLists = ['favoritos', 'leídos'];
-    for (final list in userLists) {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('lists')
-          .doc(list)
-          .collection('books')
-          .doc('workKey')
-          .get();
-      if (snapshot.exists) return true;
-    }
-    return false;
-  }
-
-  Future<double> _getBookRating() async {
-    final doc = await FirebaseFirestore.instance
-        .collection('global_books')
-        .doc(widget.book['workKey'])
-        .get();
-    if (doc.exists) {
-      return doc.data()?['rating']?.toDouble() ?? 0.0;
-    }
-    return 0.0;
-  }
-
-  Future<void> _rateBook(int rating, BuildContext context) async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    await FirebaseFirestore.instance
-        .collection('global_books')
-        .doc(widget.book['workKey'])
-        .set({'rating': rating}, SetOptions(merge: true));
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Has votado con $rating estrellas.")),
-    );
-  }
-
-  void _showInfoDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Información"),
-        content: Text(
-          "Solo los usuarios con este libro en sus listas de Favoritos o Leídos pueden votar. "
-          "Inicia sesión y agrega este libro a una de estas listas para calificarlo.",
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Debes iniciar sesión para agregar libros a tus listas.'),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text("Cerrar"),
-          ),
-        ],
-      ),
-    );
+      );
+      return;
+    }
+
+    try {
+      if (widget.book.workKey == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Faltan datos para agregar el libro.')),
+        );
+        return;
+      }
+
+      await addBookToList(user.uid, listName, {
+        'title': widget.book.title,
+        'author': widget.book.author,
+        'cover': widget.book.coverUrl,
+        'workKey': widget.book.workKey,
+        'description': widget.book.description,
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Libro añadido a "$listName".')),
+      );
+
+      if (widget.book.workKey != null) {
+        _fetchListCounts(widget.book.workKey!.substring(7));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al añadir el libro a la lista: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final User? user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text((widget.book['title']) ?? 'Detalles del libro'),
+        title: Center(
+          child: Text(
+            widget.book.title,
+            style: GoogleFonts.lexend().copyWith(color: AppColors.accent),
+          ),
+        ),
         backgroundColor: AppColors.background,
-        foregroundColor: AppColors.accent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.accent),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person, color: AppColors.secondary),
+            onPressed: () => Navigator.pushNamed(context, '/user'),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -175,79 +122,119 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.book['title'] ?? 'Título desconocido',
-                style: GoogleFonts.lexend(
-                  textStyle: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                widget.book.title,
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                widget.book['author'] ?? 'Autor desconocido',
-                style: GoogleFonts.lexend(
-                  textStyle: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey[700],
+                'Autor: ${widget.book.author}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              // Aquí está la parte mejorada para mostrar las carátulas
+              if (widget.book.coverUrl != null)
+                SizedBox(
+                  height: 200,
+                  child: Image.network(
+                    'https://covers.openlibrary.org/b/id/${widget.book.coverUrl}-L.jpg',
+                    fit: BoxFit.cover,
+                    loadingBuilder: (BuildContext context, Widget child,
+                        ImageChunkEvent? loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      );
+                    },
+                    errorBuilder: (BuildContext context, Object exception,
+                        StackTrace? stackTrace) {
+                      print('Error al cargar la imagen: $exception');
+                      return Container(
+                        color: Colors.grey[200],
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.error, color: Colors.red),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Error al cargar la imagen',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                ),
+                )
+              else
+                const Icon(Icons.book, size: 100),
+              const SizedBox(height: 16),
+              const Text(
+                'Descripción:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 16),
-              widget.book['cover'] != null
-                  ? Image.network(
-                      'https://covers.openlibrary.org/b/id/${widget.book['cover']}-L.jpg',
-                      height: 200,
-                    )
-                  : Icon(Icons.book, size: 100),
-              SizedBox(height: 16),
+              const SizedBox(height: 8),
               Text(
-                "Valoración media: ${widget.book['average_rating']?.toStringAsFixed(1) ?? 'N/A'} ⭐",
-                style: GoogleFonts.lexend(
-                  textStyle:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                widget.book.description ?? 'No hay descripción disponible.',
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Usuarios con este libro en sus listas:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Favoritos: ${_listCounts['favoritos']}'),
+                  Text('Pendientes: ${_listCounts['pendientes']}'),
+                  Text('Leídos: ${_listCounts['leidos']}'),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (user != null) ...[
+                const Text(
+                  'Añadir a listas:',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-              ),
-              SizedBox(height: 16),
-              FutureBuilder<double>(
-                future: _getBookRating(),
-                builder: (context, snapshot) {
-                  double rating = snapshot.data ?? 0.0;
-                  return Row(
-                    children: [
-                      Rating(
-                        value: rating,
-                        onValueClicked: (int value) async {
-                          bool canVote = await _userCanVote();
-                          if (canVote) {
-                            await _rateBook(value, context);
-                          } else {
-                            _showInfoDialog(context);
-                          }
-                        },
-                      ),
-                      SizedBox(width: 8),
-                      IconButton(
-                        icon: Icon(Icons.info_outline, color: Colors.grey),
-                        onPressed: () => _showInfoDialog(context),
-                      ),
-                    ],
-                  );
-                },
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => _addBookToList('favorites', context),
-                child: Text("Añadir a Favoritos"),
-              ),
-              ElevatedButton(
-                onPressed: () => _addBookToList('read', context),
-                child: Text("Añadir a Leídos"),
-              ),
-              ElevatedButton(
-                onPressed: () => _addBookToList('to_read', context),
-                child: Text("Añadir a Por Leer"),
-              ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.buttons),
+                      onPressed: () => _addToList('favoritos', context),
+                      child: const Text('Favoritos'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.buttons),
+                      onPressed: () => _addToList('pendientes', context),
+                      child: const Text('Pendientes'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.buttons),
+                      onPressed: () => _addToList('leidos', context),
+                      child: const Text('Leídos'),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                const Text(
+                  'Inicia sesión para agregar libros a tus listas.',
+                  style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+                ),
+              ],
             ],
           ),
         ),

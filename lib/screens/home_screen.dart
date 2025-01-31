@@ -2,8 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:library_app/app_styles.dart';
+import 'package:library_app/models/book.dart'; // Importa el modelo Book
 import 'package:library_app/screens/book_detail_screen.dart';
 import 'package:library_app/services/open_library_service.dart';
+import 'package:library_app/widgets/book_item.dart'; // Importa el widget BookItem
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -15,7 +17,7 @@ class HomeScreenState extends State<HomeScreen> {
   final OpenLibraryService _libraryService = OpenLibraryService();
   final TextEditingController _searchController = TextEditingController();
 
-  List<Map<String, dynamic>> _searchResults = [];
+  List<Book> _searchResults = []; // Cambia a List<Book>
   bool _isLoading = false;
 
   void _logout() async {
@@ -31,8 +33,9 @@ class HomeScreenState extends State<HomeScreen> {
     try {
       final results =
           await _libraryService.searchBooks(query: _searchController.text);
+      // Convierte los resultados en instancias de Book
       setState(() {
-        _searchResults = results;
+        _searchResults = results.map((book) => Book.fromJson(book)).toList();
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -131,18 +134,8 @@ class HomeScreenState extends State<HomeScreen> {
                       ), // Línea divisoria entre elementos
                       itemBuilder: (context, index) {
                         final book = _searchResults[index];
-                        return ListTile(
-                          leading: book['cover'] != null
-                              ? Image.network(
-                                  'https://covers.openlibrary.org/b/id/${book['cover']}-S.jpg',
-                                  width: 50,
-                                )
-                              : Icon(
-                                  Icons.book,
-                                  color: AppColors.dark,
-                                ),
-                          title: Text(book['title'] ?? 'Título desconocido'),
-                          subtitle: Text(book['author'] ?? 'Autor desconocido'),
+                        return BookItem(
+                          book: book,
                           onTap: () {
                             Navigator.push(
                               context,

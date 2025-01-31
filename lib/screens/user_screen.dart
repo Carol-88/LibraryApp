@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:library_app/app_styles.dart';
+import 'package:library_app/models/book.dart';
 import 'package:library_app/screens/book_detail_screen.dart';
 
 class UserScreen extends StatefulWidget {
@@ -45,16 +46,18 @@ class UserScreenState extends State<UserScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Center(
-              child: Text("Perfil",
-                  style: GoogleFonts.lexend().copyWith(
-                    color: AppColors.accent,
-                  ))),
+            child: Text(
+              "Perfil",
+              style: GoogleFonts.lexend().copyWith(
+                color: AppColors.accent,
+              ),
+            ),
+          ),
           backgroundColor: AppColors.background,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back,
-                color: AppColors.accent), // Icono de retroceso
+            icon: Icon(Icons.arrow_back, color: AppColors.accent),
             onPressed: () {
-              Navigator.of(context).pop(); // Volver atrás
+              Navigator.of(context).pop();
             },
           ),
           actions: [
@@ -69,12 +72,11 @@ class UserScreenState extends State<UserScreen> {
             ),
           ],
           bottom: TabBar(
-            labelColor: AppColors.accent, // Color para la pestaña seleccionada
+            labelColor: AppColors.accent,
             unselectedLabelColor: AppColors.primary,
             labelStyle: TextStyle(fontWeight: FontWeight.bold),
-            dividerColor:
-                Colors.transparent, // Color para pestañas no seleccionadas
-            indicatorColor: AppColors.dark, // Indicador debajo de la pestaña
+            dividerColor: Colors.transparent,
+            indicatorColor: AppColors.dark,
             tabs: [
               Tab(text: 'Favoritos'),
               Tab(text: 'Pendientes'),
@@ -86,7 +88,7 @@ class UserScreenState extends State<UserScreen> {
           children: [
             _buildListTab(user.uid, 'favoritos'),
             _buildListTab(user.uid, 'pendientes'),
-            _buildListTab(user.uid, 'leídos'),
+            _buildListTab(user.uid, 'leidos'),
           ],
         ),
       ),
@@ -114,30 +116,28 @@ class UserScreenState extends State<UserScreen> {
             ),
           );
         }
-
         final books = snapshot.data!.docs;
-
         return ListView.separated(
           itemCount: books.length,
           separatorBuilder: (context, index) => Container(
-            margin: EdgeInsets.symmetric(horizontal: 16.0), // Ajusta el margen
+            margin: EdgeInsets.symmetric(horizontal: 16.0),
             child: Divider(
               color: AppColors.dark,
               thickness: 1.0,
             ),
           ),
           itemBuilder: (context, index) {
-            final book = books[index].data() as Map<String, dynamic>;
-
+            final bookData = books[index].data() as Map<String, dynamic>;
+            final book = Book.fromJson(bookData);
             return ListTile(
-              leading: book['cover'] != null
+              leading: book.coverUrl != null
                   ? Image.network(
-                      'https://covers.openlibrary.org/b/id/${book['cover']}-S.jpg',
+                      'https://covers.openlibrary.org/b/id/${book.coverUrl}-S.jpg',
                       width: 50,
                     )
                   : Icon(Icons.book, size: 50),
-              title: Text(book['title'] ?? 'Título desconocido'),
-              subtitle: Text(book['author'] ?? 'Autor desconocido'),
+              title: Text(book.title),
+              subtitle: Text(book.author),
               onTap: () {
                 Navigator.push(
                   context,
@@ -153,21 +153,34 @@ class UserScreenState extends State<UserScreen> {
                         userId, listName, books[index].id);
                   } else {
                     await _moveBookToList(
-                        userId, listName, option, books[index].id, book);
+                      userId,
+                      listName,
+                      option,
+                      books[index].id,
+                      bookData,
+                    );
                   }
                 },
                 itemBuilder: (context) => [
                   if (listName != 'favoritos')
                     PopupMenuItem(
-                        value: 'favoritos', child: Text('Mover a Favoritos')),
+                      value: 'favoritos',
+                      child: Text('Mover a Favoritos'),
+                    ),
                   if (listName != 'pendientes')
                     PopupMenuItem(
-                        value: 'pendientes', child: Text('Mover a Pendientes')),
-                  if (listName != 'leídos')
+                      value: 'pendientes',
+                      child: Text('Mover a Pendientes'),
+                    ),
+                  if (listName != 'leidos')
                     PopupMenuItem(
-                        value: 'leídos', child: Text('Mover a Leídos')),
+                      value: 'leidos',
+                      child: Text('Mover a Leídos'),
+                    ),
                   PopupMenuItem(
-                      value: 'delete', child: Text('Eliminar de la lista')),
+                    value: 'delete',
+                    child: Text('Eliminar de la lista'),
+                  ),
                 ],
                 icon: Icon(Icons.more_vert),
               ),
@@ -178,9 +191,15 @@ class UserScreenState extends State<UserScreen> {
     );
   }
 
-  Future<void> _moveBookToList(String userId, String currentList,
-      String newList, String bookId, Map<String, dynamic> bookData) async {
+  Future<void> _moveBookToList(
+    String userId,
+    String currentList,
+    String newList,
+    String bookId,
+    Map<String, dynamic> bookData,
+  ) async {
     try {
+      final book = Book.fromJson(bookData);
       // Añadir libro a la nueva lista
       await _firestore
           .collection('users')
@@ -190,10 +209,8 @@ class UserScreenState extends State<UserScreen> {
           .collection('books')
           .doc(bookId)
           .set(bookData);
-
       // Eliminar libro de la lista actual
       await _removeBookFromList(userId, currentList, bookId);
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Libro movido a $newList.')),
       );
@@ -205,7 +222,10 @@ class UserScreenState extends State<UserScreen> {
   }
 
   Future<void> _removeBookFromList(
-      String userId, String listName, String bookId) async {
+    String userId,
+    String listName,
+    String bookId,
+  ) async {
     try {
       await _firestore
           .collection('users')
