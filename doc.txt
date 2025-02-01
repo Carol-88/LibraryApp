@@ -9,4 +9,5 @@ Integrar el widget rating
  - la caratula SI SE VE en la búsqueda de libros
  
  - al hacer cambios he tocado algo y cuando quito un libro de una lista
-   no se borra en los contadores globales, pone que el libro está 7 veces en favoritos y solo esta dos veces
+   no se borra en los contadores globales
+- pone que el libro está 7 veces en favoritos y solo esta dos veces

@@ -151,6 +151,14 @@ class BookDetailScreenState extends State<BookDetailScreen> {
           icon: const Icon(Icons.arrow_back, color: AppColors.accent),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.person, color: AppColors.secondary),
+            onPressed: () {
+              Navigator.pushNamed(context, '/user');
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
