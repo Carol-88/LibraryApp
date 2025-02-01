@@ -1,5 +1,5 @@
-Integrar el widget rating de harry plugin_platform_interface 
- - no conseguido
+Integrar el widget rating 
+ - por testear
 
  --------
 
@@ -8,6 +8,5 @@ Integrar el widget rating de harry plugin_platform_interface
  - la caratula no se ve en las listas del usuario
  - la caratula SI SE VE en la búsqueda de libros
  
- - al hacer cambios he tocado algo y cuando añado un libro a las listas,
-   lo hace siempre, sin tener en cuenta si ya lo tiene en la lista, y si lo quito de la lista
-   no se borra en los contadores globales.
+ - al hacer cambios he tocado algo y cuando quito un libro de una lista
+   no se borra en los contadores globales, pone que el libro está 7 veces en favoritos y solo esta dos veces

@@ -5,18 +5,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:library_app/app_styles.dart';
 import 'package:library_app/models/book.dart';
 import 'package:library_app/widgets/add_book.dart';
+import 'package:library_app/widgets/rating_bar.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final Book book;
 
-  const BookDetailScreen({required this.book});
+  const BookDetailScreen({super.key, required this.book});
 
   @override
-  _BookDetailScreenState createState() => _BookDetailScreenState();
+  BookDetailScreenState createState() => BookDetailScreenState();
 }
 
-class _BookDetailScreenState extends State<BookDetailScreen> {
+class BookDetailScreenState extends State<BookDetailScreen> {
   late Map<String, int> _listCounts;
+  double? _userRating;
 
   @override
   void initState() {
@@ -24,6 +26,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     _listCounts = {'favoritos': 0, 'pendientes': 0, 'leidos': 0};
     if (widget.book.workKey != null) {
       _fetchListCounts(widget.book.workKey!.substring(7));
+      _fetchUserRating();
     }
   }
 
@@ -35,17 +38,59 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           .get();
 
       if (bookDoc.exists) {
-        setState(() {
-          _listCounts = {
-            'favoritos': bookDoc['listCount']['favoritos'] ?? 0,
-            'pendientes': bookDoc['listCount']['pendientes'] ?? 0,
-            'leidos': bookDoc['listCount']['leidos'] ?? 0,
-          };
-        });
+        final data = bookDoc.data() as Map<String, dynamic>?;
+        if (data != null && data.containsKey('listCount')) {
+          setState(() {
+            _listCounts = {
+              'favoritos': data['listCount']['favoritos'] ?? 0,
+              'pendientes': data['listCount']['pendientes'] ?? 0,
+              'leidos': data['listCount']['leidos'] ?? 0,
+            };
+          });
+        }
       }
     } catch (e) {
       print("Error al obtener datos del libro: $e");
     }
+  }
+
+  Future<void> _fetchUserRating() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || widget.book.workKey == null) return;
+
+    final docRef = FirebaseFirestore.instance
+        .collection('global_books')
+        .doc(widget.book.workKey!.substring(7));
+
+    final doc = await docRef.get();
+    if (doc.exists) {
+      final data = doc.data();
+      if (data != null && data.containsKey('ratings')) {
+        setState(() {
+          _userRating = (data['ratings'][user.uid] ?? 0.0).toDouble();
+        });
+      }
+    }
+  }
+
+  Future<void> _rateBook(double rating) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || widget.book.workKey == null) return;
+
+    final docRef = FirebaseFirestore.instance
+        .collection('global_books')
+        .doc(widget.book.workKey!.substring(7));
+
+    // Actualizar la calificación del libro
+    await docRef.set({
+      'ratings': {
+        user.uid: rating,
+      }
+    }, SetOptions(merge: true));
+
+    setState(() {
+      _userRating = rating;
+    });
   }
 
   Future<void> _addToList(String listName, BuildContext context) async {
@@ -97,23 +142,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            widget.book.title,
-            style: GoogleFonts.lexend().copyWith(color: AppColors.accent),
-          ),
+        title: Text(
+          widget.book.title,
+          style: GoogleFonts.lexend().copyWith(color: AppColors.accent),
         ),
         backgroundColor: AppColors.background,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.accent),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person, color: AppColors.secondary),
-            onPressed: () => Navigator.pushNamed(context, '/user'),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -121,84 +158,39 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.book.title,
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
+              Text(widget.book.title,
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              Text(
-                'Autor: ${widget.book.author}',
-                style: const TextStyle(fontSize: 18),
-              ),
+              Text('Autor: ${widget.book.author}',
+                  style: const TextStyle(fontSize: 18)),
               const SizedBox(height: 16),
-              // Aquí está la parte mejorada para mostrar las carátulas
-              if (widget.book.coverUrl != null)
-                SizedBox(
-                  height: 200,
-                  child: Image.network(
-                    'https://covers.openlibrary.org/b/id/${widget.book.coverUrl}-L.jpg',
-                    fit: BoxFit.cover,
-                    loadingBuilder: (BuildContext context, Widget child,
-                        ImageChunkEvent? loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                    errorBuilder: (BuildContext context, Object exception,
-                        StackTrace? stackTrace) {
-                      print('Error al cargar la imagen: $exception');
-                      return Container(
-                        color: Colors.grey[200],
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.error, color: Colors.red),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Error al cargar la imagen',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                )
-              else
-                const Icon(Icons.book, size: 100),
+              widget.book.coverUrl != null
+                  ? Image.network(
+                      'https://covers.openlibrary.org/b/id/${widget.book.coverUrl}-L.jpg',
+                      height: 200,
+                      fit: BoxFit.cover)
+                  : const Icon(Icons.book, size: 100),
               const SizedBox(height: 16),
-              const Text(
-                'Descripción:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              if (user != null) ...[
+                const Text('Valorar el libro:',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Rating(
+                  value: _userRating ?? 0.0,
+                  onValueClicked: (newRating) {
+                    _rateBook(newRating.toDouble());
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
+              const Text('Usuarios con este libro en sus listas:',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              Text(
-                widget.book.description ?? 'No hay descripción disponible.',
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Usuarios con este libro en sus listas:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text('Favoritos: ${_listCounts['favoritos']}'),
-                  Text('Pendientes: ${_listCounts['pendientes']}'),
-                  Text('Leídos: ${_listCounts['leidos']}'),
-                ],
-              ),
+              Text('Favoritos: ${_listCounts['favoritos']}'),
+              Text('Pendientes: ${_listCounts['pendientes']}'),
+              Text('Leídos: ${_listCounts['leidos']}'),
               const SizedBox(height: 16),
               if (user != null) ...[
                 const Text(
