@@ -31,6 +31,11 @@ class Book {
   // 📌 Método para crear un Book desde un snapshot de Firestore
   factory Book.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    List<int> ratings = [];
+    var dataRatings = data['ratings'];
+    for (var r in dataRatings) {
+      ratings.add(r.value);
+    }
     return Book(
       id: doc.id,
       title: data['title'] ?? 'Título desconocido',
@@ -38,8 +43,7 @@ class Book {
       description: data['description'] ?? 'No hay descripción disponible',
       coverUrl: data['coverUrl'],
       workKey: data['workKey'],
-      ratings: List<int>.from(
-          data['ratings'] ?? []), // Convertimos la lista de ratings
+      ratings: ratings, // Convertimos la lista de ratings
     );
   }
 
@@ -54,5 +58,19 @@ class Book {
       'workKey': workKey,
       'ratings': ratings,
     };
+  }
+
+  factory Book.fromJson(Map<String, dynamic> json) {
+    return Book(
+      id: json['workKey']?.substring(7) ?? '',
+      title: json['title'] ?? 'Título desconocido',
+      author: json['author'] ?? 'Autor desconocido',
+      description: json['description'],
+      rating: json['rating'] ?? 0.0,
+      coverUrl: json['cover'] != null
+          ? 'https://covers.openlibrary.org/b/id/${json['cover']}-L.jpg'
+          : null,
+      workKey: json['workKey'], // Agregar al constructor
+    );
   }
 }
