@@ -173,23 +173,32 @@ class BookDetailScreenState extends State<BookDetailScreen> {
               Text('Autor: ${widget.book.author}',
                   style: const TextStyle(fontSize: 18)),
               const SizedBox(height: 16),
-              widget.book.coverUrl != null
-                  ? Image.network(
-                      'https://covers.openlibrary.org/b/id/${widget.book.coverUrl}-L.jpg',
-                      height: 200,
-                      fit: BoxFit.cover)
-                  : const Icon(Icons.book, size: 100),
+              Center(
+                child: widget.book.coverUrl != null
+                    ? Image.network(widget.book.coverUrl!,
+                        height: 300, fit: BoxFit.cover)
+                    : const Icon(Icons.book, size: 100),
+              ),
               const SizedBox(height: 16),
               if (user != null) ...[
-                const Text('Valorar el libro:',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Center(
+                  child: const Text('Valorar el libro:',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
                 const SizedBox(height: 8),
-                Rating(
-                  value: _userRating ?? 0.0,
-                  onValueClicked: (newRating) {
-                    _rateBook(newRating.toDouble());
-                  },
+                Center(
+                  child: Rating(
+                    value: _userRating ?? 0.0,
+                    onValueClicked: (newRating) {
+                      _rateBook(newRating.toDouble());
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Descripción: ${widget.book.description?.isNotEmpty == true ? widget.book.description : "No hay descripción disponible"}',
+                  style: const TextStyle(fontSize: 18),
                 ),
                 const SizedBox(height: 16),
               ],

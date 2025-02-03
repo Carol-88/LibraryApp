@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Book {
   final String id;
   final String title;
@@ -5,7 +7,8 @@ class Book {
   final String? description;
   final double rating;
   final String? coverUrl;
-  final String? workKey; // Nuevo campo
+  final String? workKey;
+  final List<int> ratings; // Lista de ratings de los usuarios
 
   Book({
     required this.id,
@@ -14,34 +17,42 @@ class Book {
     this.description,
     this.rating = 0.0,
     this.coverUrl,
-    this.workKey, // Nuevo parámetro
+    this.workKey,
+    this.ratings = const [], // Inicializamos la lista vacía
   });
 
-  // Método para crear un Book desde un JSON
-  factory Book.fromJson(Map<String, dynamic> json) {
+  // 📌 Método para calcular el rating promedio
+  double get averageRating {
+    if (ratings.isEmpty) return 0.0; // Si no hay votos, rating = 0
+    int sum = ratings.reduce((a, b) => a + b);
+    return sum / ratings.length;
+  }
+
+  // 📌 Método para crear un Book desde un snapshot de Firestore
+  factory Book.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return Book(
-      id: json['id'] ?? '',
-      title: json['title'] ?? 'Título desconocido',
-      author: json['author'] ?? 'Autor desconocido',
-      description: json['description'],
-      rating: json['rating'] ?? 0.0,
-      coverUrl: json['cover'] != null
-          ? 'https://covers.openlibrary.org/b/id/${json['cover']}-S.jpg'
-          : null,
-      workKey: json['workKey'], // Agregar al constructor
+      id: doc.id,
+      title: data['title'] ?? 'Título desconocido',
+      author: data['author'] ?? 'Autor desconocido',
+      description: data['description'] ?? 'No hay descripción disponible',
+      coverUrl: data['coverUrl'],
+      workKey: data['workKey'],
+      ratings: List<int>.from(
+          data['ratings'] ?? []), // Convertimos la lista de ratings
     );
   }
 
-  // Método para convertir un Book a JSON
+  // 📌 Método para convertir un Book a JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'title': title,
       'author': author,
       'description': description,
-      'rating': rating,
-      'cover': coverUrl,
-      'workKey': workKey, // Agregar al JSON
+      'coverUrl': coverUrl,
+      'workKey': workKey,
+      'ratings': ratings,
     };
   }
 }
