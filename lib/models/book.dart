@@ -8,34 +8,38 @@ class Book {
   final double rating;
   final String? coverUrl;
   final String? workKey;
-  final List<int> ratings; // Lista de ratings de los usuarios
+  final List<double> ratings; // Lista de ratings de los usuarios
 
   Book({
     required this.id,
     required this.title,
     required this.author,
     this.description,
-    this.rating = 0.0,
+    this.rating = 0,
     this.coverUrl,
     this.workKey,
     this.ratings = const [], // Inicializamos la lista vacía
   });
 
-  // 📌 Método para calcular el rating promedio
+  // 📌 Método para calcular el rating promedio con medias estrellas
   double get averageRating {
-    if (ratings.isEmpty) return 0.0; // Si no hay votos, rating = 0
-    int sum = ratings.reduce((a, b) => a + b);
-    return sum / ratings.length;
+    if (ratings.isEmpty) return 0.0;
+    double sum = ratings.reduce((a, b) => a + b);
+    return double.parse(
+        (sum / ratings.length).toStringAsFixed(1)); // Redondeo a 1 decimal
   }
 
   // 📌 Método para crear un Book desde un snapshot de Firestore
   factory Book.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    List<int> ratings = [];
+    List<double> ratings = [];
+
     var dataRatings = data['ratings'];
-    for (var r in dataRatings) {
-      ratings.add(r.value);
+    if (dataRatings is Map<String, dynamic>) {
+      // Convertimos los valores a double en lugar de int
+      ratings = dataRatings.values.map((r) => (r as num).toDouble()).toList();
     }
+
     return Book(
       id: doc.id,
       title: data['title'] ?? 'Título desconocido',
@@ -43,7 +47,11 @@ class Book {
       description: data['description'] ?? 'No hay descripción disponible',
       coverUrl: data['coverUrl'],
       workKey: data['workKey'],
-      ratings: ratings, // Convertimos la lista de ratings
+      ratings: ratings,
+      rating: ratings.isNotEmpty
+          ? double.parse((ratings.reduce((a, b) => a + b) / ratings.length)
+              .toStringAsFixed(1))
+          : 0.0, // Redondeo a 1 decimal
     );
   }
 
@@ -66,7 +74,7 @@ class Book {
       title: json['title'] ?? 'Título desconocido',
       author: json['author'] ?? 'Autor desconocido',
       description: json['description'],
-      rating: json['rating'] ?? 0.0,
+      rating: json['rating'] ?? 0,
       coverUrl: json['cover'] != null
           ? 'https://covers.openlibrary.org/b/id/${json['cover']}-L.jpg'
           : null,

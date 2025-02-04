@@ -22,7 +22,7 @@ class BookItem extends StatelessWidget {
         }
 
         if (!snapshot.hasData || !snapshot.data!.exists) {
-          return _buildBookTile(context, 'Cargando...');
+          return _buildBookTile(context, '0');
         }
 
         // Convertir el snapshot en un objeto Book

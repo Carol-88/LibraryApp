@@ -10,31 +10,38 @@ class Rating extends StatelessWidget {
 
   final double value;
   final Color color;
-  final Function(int)? onValueClicked;
+  final Function(double)? onValueClicked;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        for (int i = 1; i <= 5; i++)
-          InkWell(
-            onTap: () {
-              if (onValueClicked != null) {
-                onValueClicked!(i);
-              }
-            },
-            child: (value >= i)
-                ? Icon(
-                    Icons.star,
-                    color: color,
-                  )
-                : Icon(
-                    Icons.star_border,
-                    color: color,
-                  ),
+      children: List.generate(5, (index) {
+        double starValue = index + 1.0;
+        bool isFull = value >= starValue;
+        bool isHalf = value >= starValue - 0.5 && value < starValue;
+
+        return GestureDetector(
+          onTapDown: (details) {
+            if (onValueClicked != null) {
+              // Detecta si se clickea en la mitad izquierda o derecha
+              final tapPosition = details.localPosition.dx;
+              final starWidth = 24.0; // Tamaño aproximado de la estrella
+              double newValue =
+                  (tapPosition < starWidth / 2) ? starValue - 0.5 : starValue;
+              onValueClicked!(newValue);
+            }
+          },
+          child: Icon(
+            isFull
+                ? Icons.star
+                : isHalf
+                    ? Icons.star_half
+                    : Icons.star_border,
+            color: color,
           ),
-      ],
+        );
+      }),
     );
   }
 }
