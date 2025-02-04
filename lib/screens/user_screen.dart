@@ -132,10 +132,11 @@ class UserScreenState extends State<UserScreen> {
             return ListTile(
               leading: book.coverUrl != null
                   ? Image.network(
-                      'https://covers.openlibrary.org/b/id/${book.coverUrl}-S.jpg',
-                      width: 50,
+                      book.coverUrl!,
+                      height: 100,
+                      fit: BoxFit.cover,
                     )
-                  : Icon(Icons.book, size: 50),
+                  : Icon(Icons.book, size: 70, color: AppColors.dark),
               title: Text(book.title),
               subtitle: Text(book.author),
               onTap: () {

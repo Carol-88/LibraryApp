@@ -1,13 +1,13 @@
-Integrar el widget rating 
- - por testear
 
- --------
+ Tareas/errores:
 
- Implemento el modelo de datos y widget para BOOK:
- - la caratula no se ve en book_detail_screen
- - la caratula no se ve en las listas del usuario
- - la caratula SI SE VE en la búsqueda de libros
- 
- - al hacer cambios he tocado algo y cuando quito un libro de una lista
-   no se borra en los contadores globales
-- pone que el libro está 7 veces en favoritos y solo esta dos veces
+- no se borran los libros en los contadores globales
+- tampoco cambia el contador si muevo un libro
+  de una lista a otra.
+
+Ya funciona el rating, pero falta:
+- que solo puedan votar los usuarios que tengan el libro en su lista de favoritos
+  o leídos, si esta en pendientes o no esta logueado, no puede votar el libro.
+- testear si se votan dos usuarios, si se hace la media correctamente
+
+*Las imagenes cargan muy lento, investigar si se puede implementar alguna mejora

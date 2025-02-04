@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:library_app/app_styles.dart';
 
 import '../models/book.dart';
 
@@ -42,11 +43,10 @@ class BookItem extends StatelessWidget {
         leading: book.coverUrl != null
             ? Image.network(
                 book.coverUrl!,
-                width: 40,
-                height: 70,
+                height: 100,
                 fit: BoxFit.cover,
               )
-            : const Icon(Icons.book, color: Colors.grey),
+            : const Icon(Icons.book, size: 60, color: AppColors.dark),
         title: Text(book.title),
         subtitle: Text(book.author),
         trailing: Text('Ratings: $rating ★',
