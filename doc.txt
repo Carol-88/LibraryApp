@@ -10,4 +10,7 @@ Ya funciona el rating, pero falta:
   o leídos, si esta en pendientes o no esta logueado, no puede votar el libro.
 - testear si se votan dos usuarios, si se hace la media correctamente
 
-*Las imagenes cargan muy lento, investigar si se puede implementar alguna mejora
+----------------------------------------------------------------
+Funcionalidad nueva / UI
+*Las imagenes cargan muy lento, intentar añadir paginación, solo cargar 10 libros por pagina*
+*Corregir/Mejorar estilos*
