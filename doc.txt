@@ -14,3 +14,4 @@ Ya funciona el rating, pero falta:
 Funcionalidad nueva / UI
 *Las imagenes cargan muy lento, intentar añadir paginación, solo cargar 10 libros por pagina*
 *Corregir/Mejorar estilos*
+*Si hago logout saltar a la pantalla de login reseteando toda la app*

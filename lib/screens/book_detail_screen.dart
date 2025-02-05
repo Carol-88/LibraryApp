@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:library_app/app_styles.dart';
 import 'package:library_app/models/book.dart';
-import 'package:library_app/widgets/add_book.dart';
+import 'package:library_app/services/add_book.dart';
 import 'package:library_app/widgets/rating_bar.dart';
 
 class BookDetailScreen extends StatefulWidget {
