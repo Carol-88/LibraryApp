@@ -81,6 +81,19 @@ class BookDetailScreenState extends State<BookDetailScreen> {
         .collection('global_books')
         .doc(widget.book.workKey!.substring(7));
 
+    // Comprobar si el usuario puede votar
+    bool canVote = await _userCanVote();
+    if (!canVote) {
+      // Mostrar mensaje explicando que deben tener el libro en sus listas de favoritos o leídos para poder votarlo
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Debes tener este libro en tus listas de favoritos o leídos para poder votarlo.'),
+        ),
+      );
+      return;
+    }
+
     // Actualizar la calificación del libro
     await docRef.set({
       'ratings': {
@@ -91,6 +104,25 @@ class BookDetailScreenState extends State<BookDetailScreen> {
     setState(() {
       _userRating = rating;
     });
+  }
+
+  Future<bool> _userCanVote() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    final userLists = ['favoritos', 'leidos'];
+    for (final list in userLists) {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('lists')
+          .doc(list)
+          .collection('books')
+          .where('workKey', isEqualTo: widget.book.workKey)
+          .get();
+      if (snapshot.docs.isNotEmpty) return true;
+    }
+    return false;
   }
 
   Future<void> _addToList(String listName, BuildContext context) async {
