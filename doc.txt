@@ -6,8 +6,6 @@
   de una lista a otra.
 
 Ya funciona el rating, pero falta:
-- que solo puedan votar los usuarios que tengan el libro en su lista de favoritos
-  o leídos, si esta en pendientes o no esta logueado, no puede votar el libro.
 - testear si se votan dos usuarios, si se hace la media correctamente
 
 ----------------------------------------------------------------
