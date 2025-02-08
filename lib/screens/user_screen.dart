@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:library_app/app_styles.dart';
-import 'package:library_app/services/books_service.dart';
+import 'package:library_app/services/book_lists_service.dart';
 import 'package:library_app/widgets/books_list.dart';
 
 class UserScreen extends StatefulWidget {
