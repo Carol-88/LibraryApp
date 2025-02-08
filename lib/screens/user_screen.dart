@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:library_app/app_styles.dart';
-import 'package:library_app/services/user_service.dart';
+import 'package:library_app/services/books_service.dart';
 import 'package:library_app/widgets/books_list.dart';
 
 class UserScreen extends StatefulWidget {
@@ -10,11 +10,11 @@ class UserScreen extends StatefulWidget {
 }
 
 class UserScreenState extends State<UserScreen> {
-  final UserService _userService = UserService();
+  final BooksService _bookService = BooksService();
 
   @override
   Widget build(BuildContext context) {
-    final user = _userService.currentUser;
+    final user = _bookService.currentUser;
 
     if (user == null) {
       Future.microtask(() {
@@ -44,7 +44,7 @@ class UserScreenState extends State<UserScreen> {
             IconButton(
               icon: Icon(Icons.logout, color: AppColors.primary),
               onPressed: () async {
-                await _userService.signOut();
+                await _bookService.signOut();
                 if (mounted) {
                   Navigator.of(context).pushReplacementNamed('/home');
                 }

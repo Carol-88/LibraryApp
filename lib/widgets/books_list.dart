@@ -2,12 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:library_app/models/book.dart';
 import 'package:library_app/screens/book_detail_screen.dart';
-import 'package:library_app/services/user_service.dart';
+import 'package:library_app/services/books_service.dart';
 
 class BookListWidget extends StatelessWidget {
   final String userId;
   final String listName;
-  final UserService userService = UserService();
+  final BooksService userService = BooksService();
 
   BookListWidget({required this.userId, required this.listName});
 
