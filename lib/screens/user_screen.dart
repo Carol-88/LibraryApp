@@ -1,7 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:library_app/app_styles.dart';
-import 'package:library_app/services/book_lists_service.dart';
+import 'package:library_app/services/books_service.dart';
 import 'package:library_app/widgets/books_list.dart';
 
 class UserScreen extends StatefulWidget {
@@ -11,6 +12,12 @@ class UserScreen extends StatefulWidget {
 
 class UserScreenState extends State<UserScreen> {
   final BooksService _bookService = BooksService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  void _logout() async {
+    await _auth.signOut();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,13 +49,8 @@ class UserScreenState extends State<UserScreen> {
           ),
           actions: [
             IconButton(
-              icon: Icon(Icons.logout, color: AppColors.primary),
-              onPressed: () async {
-                await _bookService.signOut();
-                if (mounted) {
-                  Navigator.of(context).pushReplacementNamed('/home');
-                }
-              },
+              icon: Icon(Icons.logout, color: AppColors.secondary),
+              onPressed: _logout,
             ),
           ],
           bottom: TabBar(

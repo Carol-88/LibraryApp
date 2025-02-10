@@ -1,15 +1,9 @@
 
- Tareas/errores:
-
-- no se borran los libros en los contadores globales
-- tampoco cambia el contador si muevo un libro
-  de una lista a otra.
-
-Ya funciona el rating, pero falta:
-- testear si se votan dos usuarios, si se hace la media correctamente
+ Tareas/errores
+ - No puedo mover ni eliminar los libros de las listas.
+ - Se añade el libro al contador global, verificar si se borra o mueve de lista.
 
 ----------------------------------------------------------------
 Funcionalidad nueva / UI
-*Las imagenes cargan muy lento, intentar añadir paginación, solo cargar 10 libros por pagina*
+*Intentar añadir paginación, solo cargar 10 libros por pagina*
 *Corregir/Mejorar estilos*
-*Si hago logout saltar a la pantalla de login reseteando toda la app*

@@ -15,7 +15,7 @@ class BookItem extends StatelessWidget {
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('global_books')
-          .doc(book.id)
+          .doc(book.workKey)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {

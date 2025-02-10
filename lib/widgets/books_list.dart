@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:library_app/models/book.dart';
 import 'package:library_app/screens/book_detail_screen.dart';
-import 'package:library_app/services/book_lists_service.dart';
+import 'package:library_app/services/books_service.dart';
 
 class BookListWidget extends StatelessWidget {
   final String userId;
@@ -45,12 +45,34 @@ class BookListWidget extends StatelessWidget {
               },
               trailing: PopupMenuButton<String>(
                 onSelected: (option) async {
-                  if (option == 'delete') {
-                    await userService.removeBookFromList(
-                        userId, listName, books[index].id);
-                  } else {
-                    await userService.moveBookToList(
-                        userId, listName, option, books[index].id, bookData);
+                  try {
+                    if (option == 'delete') {
+                      await userService.removeBookFromList(
+                          userId, listName, books[index].id);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Libro eliminado de $listName'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    } else {
+                      await userService.moveBookToList(
+                          userId, listName, option, books[index].id, bookData);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Libro movido a $option'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red,
+                        duration: Duration(seconds: 3),
+                      ),
+                    );
                   }
                 },
                 itemBuilder: (context) => [
@@ -66,7 +88,6 @@ class BookListWidget extends StatelessWidget {
                   PopupMenuItem(
                       value: 'delete', child: Text('Eliminar de la lista')),
                 ],
-                icon: Icon(Icons.more_vert),
               ),
             );
           },
