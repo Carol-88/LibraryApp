@@ -1,0 +1,8 @@
+
+ Tareas/errores
+
+
+----------------------------------------------------------------
+Funcionalidad nueva / UI
+*Intentar añadir paginación, solo cargar 10 libros por pagina*
+*Corregir/Mejorar estilos*

@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:library_app/app_styles.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -31,23 +33,49 @@ class LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Iniciar Sesión')),
+      appBar: AppBar(
+        title: Center(
+          child: Text(
+            "Iniciar sesión",
+            style: GoogleFonts.lexend().copyWith(color: AppColors.accent),
+          ),
+        ),
+        backgroundColor: AppColors.background,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColors.accent),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(40),
         child: Column(
           children: [
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'Correo'),
+              decoration: InputDecoration(
+                labelText: 'Correo',
+                labelStyle: TextStyle(color: AppColors.dark),
+              ),
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Contraseña'),
+              decoration: InputDecoration(
+                labelText: 'Contraseña',
+                labelStyle: TextStyle(color: AppColors.dark),
+              ),
               obscureText: true,
             ),
-            SizedBox(height: 10),
-            ElevatedButton(onPressed: _login, child: Text('Iniciar Sesión')),
+            SizedBox(height: 40),
+            ElevatedButton(
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: AppColors.buttons),
+              onPressed: _login,
+              child: Text('Iniciar Sesión'),
+            ),
             TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.dark,
+              ),
               onPressed: () {
                 Navigator.pushNamed(context, '/register');
               },
