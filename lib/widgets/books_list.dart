@@ -22,7 +22,7 @@ class BookListWidget extends StatelessWidget {
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text('No hay libros en tu lista de $listName.'));
         }
-        final books = snapshot.data!.docs;
+        final List<QueryDocumentSnapshot<Object?>> books = snapshot.data!.docs;
         return ListView.builder(
           itemCount: books.length,
           itemBuilder: (context, index) {
@@ -48,7 +48,7 @@ class BookListWidget extends StatelessWidget {
                   try {
                     if (option == 'delete') {
                       await userService.removeBookFromList(
-                          userId, listName, books[index].id);
+                          userId, listName, book.workKey ?? "");
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Libro eliminado de $listName'),
@@ -56,8 +56,8 @@ class BookListWidget extends StatelessWidget {
                         ),
                       );
                     } else {
-                      await userService.moveBookToList(
-                          userId, listName, option, books[index].id, bookData);
+                      await userService.moveBookToList(userId, listName, option,
+                          book.workKey ?? "", bookData);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Libro movido a $option'),

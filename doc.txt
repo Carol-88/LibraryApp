@@ -1,7 +1,6 @@
 
  Tareas/errores
- - No puedo mover ni eliminar los libros de las listas.
- - Se añade el libro al contador global, verificar si se borra o mueve de lista.
+
 
 ----------------------------------------------------------------
 Funcionalidad nueva / UI

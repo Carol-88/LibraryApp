@@ -22,6 +22,7 @@ class HomeScreenState extends State<HomeScreen> {
 
   void _logout() async {
     await _auth.signOut();
+    _searchResults.clear();
     setState(() {});
   }
 
