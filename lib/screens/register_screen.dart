@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:library_app/app_styles.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -31,7 +33,19 @@ class RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Registro')),
+      appBar: AppBar(
+        title: Center(
+          child: Text(
+            "Registro",
+            style: GoogleFonts.lexend().copyWith(color: AppColors.accent),
+          ),
+        ),
+        backgroundColor: AppColors.background,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColors.accent),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
