@@ -47,21 +47,35 @@ class LoginScreenState extends State<LoginScreen> {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(40),
         child: Column(
           children: [
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'Correo'),
+              decoration: InputDecoration(
+                labelText: 'Correo',
+                labelStyle: TextStyle(color: AppColors.dark),
+              ),
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Contraseña'),
+              decoration: InputDecoration(
+                labelText: 'Contraseña',
+                labelStyle: TextStyle(color: AppColors.dark),
+              ),
               obscureText: true,
             ),
-            SizedBox(height: 10),
-            ElevatedButton(onPressed: _login, child: Text('Iniciar Sesión')),
+            SizedBox(height: 40),
+            ElevatedButton(
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: AppColors.buttons),
+              onPressed: _login,
+              child: Text('Iniciar Sesión'),
+            ),
             TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.dark,
+              ),
               onPressed: () {
                 Navigator.pushNamed(context, '/register');
               },
