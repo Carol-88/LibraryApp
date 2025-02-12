@@ -15,7 +15,7 @@ Library App es una aplicación móvil desarrollada en Flutter que permite a los 
 
 - **Flutter**: Framework para el desarrollo móvil.
 - **Firebase Authentication**: Manejo de registro e inicio de sesión.
-- **Cloud Firestore**: Base de datos en la nube para almacenar libros, listas y votos.
+- **Firebase Database**: Base de datos en la nube para almacenar libros, listas y votos.
 - **Google Fonts**: Tipografía personalizada.
 
 ## 📌 Instalación
