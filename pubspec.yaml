@@ -19,6 +19,7 @@ dependencies:
   firebase_core: ^3.9.0
   firebase_auth: ^5.3.4
   cloud_firestore: ^5.6.0
+  flutter_launcher_icons: ^0.14.3
 
 dev_dependencies:
   flutter_test:
@@ -32,3 +33,10 @@ flutter:
     - family: Lexend
       fonts:
         - asset: assets/fonts/Lexend-Regular.ttf
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon_libraryapp.png" # Cambia esto por la ruta de tu ícono
+  adaptive_icon_background: "#ffffff" # Color de fondo para Android
+  adaptive_icon_foreground: "assets/icon/icon_libraryapp.png" # Opcional, solo para Android
